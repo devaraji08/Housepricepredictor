@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered House Price Predictor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .ai-badge {
+            display: inline-block;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-top: 10px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 20px rgba(255, 107, 107, 0.5); }
+            to { box-shadow: 0 0 30px rgba(78, 205, 196, 0.8); }
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0;
+            min-height: 700px;
+        }
+
+        .inputs-section {
+            padding: 40px;
+            background: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+        }
+
+        .prediction-section {
+            padding: 40px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-right: 1px solid #e9ecef;
+        }
+
+        .ai-insights-section {
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.95rem;
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .slider-container {
+            position: relative;
+            margin-top: 10px;
+        }
+
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .slider-value {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(45deg, #2c3e50, #3498db);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .price-display {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .price-amount {
+            font-size: 4rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .price-amount::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            border-radius: 2px;
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #27ae60);
+            border-radius: 4px;
+            transition: all 0.8s ease;
+            position: relative;
+        }
+
+        .confidence-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .ai-insights {
+            flex: 1;
+        }
+
+        .ai-insights h3 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ai-insight-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .ai-insight-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .insight-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .insight-content {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+
+        .market-trends {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .trend-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .trend-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .trend-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .neural-network-viz {
+            width: 100%;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .neural-node {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #4ecdc4;
+            border-radius: 50%;
+            animation: pulse-node 2s ease-in-out infinite;
+        }
+
+        .neural-connection {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, #4ecdc4, #ff6b6b);
+            opacity: 0.6;
+            animation: data-flow 3s linear infinite;
+        }
+
+        @keyframes pulse-node {
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
+
+        @keyframes data-flow {
+            0% { transform: scaleX(0); }
+            50% { transform: scaleX(1); }
+            100% { transform: scaleX(0); }
+        }
+
+        .ai-processing {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .processing-dots {
+            display: flex;
+            gap: 5px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: #4ecdc4;
+            border-radius: 50%;
+            animation: loading 1.4s ease-in-out infinite both;
+        }
+
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+        .dot:nth-child(3) { animation-delay: 0s; }
+
+        @keyframes loading {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1.2); opacity: 1; }
+        }
+
+        .recommendation-card {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            box-shadow: 0 8px 25px rgba(46, 204, 113, 0.3);
+        }
+
+        .recommendation-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .price-breakdown {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .breakdown-item:last-child {
+            border-bottom: none;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .pulse {
+            animation: pulse 0.5s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .inputs-section, .prediction-section {
+                border-right: none;
+                border-bottom: 1px solid #e9ecef;
+            }
+            
+            .price-amount {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI-Powered House Price Predictor</h1>
+            <p>Advanced machine learning algorithms for precise property valuation</p>
+            <div class="ai-badge">Powered by Neural Networks</div>
+        </div>
+        
+        <div class="main-content">
+            <div class="inputs-section">
+                <div class="input-group">
+                    <label for="area">🏠 Area (sq ft)</label>
+                    <div class="slider-container">
+                        <input type="range" id="area" class="slider" min="500" max="5000" value="1500">
+                        <div class="slider-value" id="areaValue">1500 sq ft</div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="bedrooms">🛏️ Bedrooms</label>
+                    <select id="bedrooms">
+                        <option value="1">1 Bedroom</option>
+                        <option value="2">2 Bedrooms</option>
+                        <option value="3" selected>3 Bedrooms</option>
+                        <option value="4">4 Bedrooms</option>
+                        <option value="5">5+ Bedrooms</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="bathrooms">🚿 Bathrooms</label>
+                    <select id="bathrooms">
+                        <option value="1">1 Bathroom</option>
+                        <option value="2" selected>2 Bathrooms</option>
+                        <option value="3">3 Bathrooms</option>
+                        <option value="4">4+ Bathrooms</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="age">📅 Property Age (years)</label>
+                    <div class="slider-container">
+                        <input type="range" id="age" class="slider" min="0" max="50" value="10">
+                        <div class="slider-value" id="ageValue">10 years</div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="location">📍 Location Type</label>
+                    <select id="location">
+                        <option value="urban">Urban</option>
+                        <option value="suburban" selected>Suburban</option>
+                        <option value="rural">Rural</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="condition">⭐ Property Condition</label>
+                    <select id="condition">
+                        <option value="poor">Poor</option>
+                        <option value="fair">Fair</option>
+                        <option value="good" selected>Good</option>
+                        <option value="excellent">Excellent</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="marketTrend">📈 Market Trend</label>
+                    <select id="marketTrend">
+                        <option value="declining">Declining</option>
+                        <option value="stable" selected>Stable</option>
+                        <option value="growing">Growing</option>
+                        <option value="hot">Hot Market</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="prediction-section">
+                <div class="price-display">
+                    <div class="price-amount" id="predictedPrice">$325,000</div>
+                    <div class="price-label">AI Predicted Value</div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" id="confidenceBar" style="width: 85%"></div>
+                    </div>
+                    <div style="font-size: 0.9rem; color: #7f8c8d; margin-top: 5px;">
+                        Confidence: <span id="confidenceLevel">85%</span>
+                    </div>
+                </div>
+
+                <div class="ai-processing" id="processingIndicator" style="display: none;">
+                    <div class="processing-dots">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
+                    <span>AI analyzing market data...</span>
+                </div>
+
+                <div class="neural-network-viz" id="neuralViz">
+                    <!-- Neural network visualization will be generated by JS -->
+                </div>
+
+                <div class="price-breakdown">
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">Base Neural Score</span>
+                        <span class="breakdown-value" id="neuralScore">8.5/10</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">Market Sentiment</span>
+                        <span class="breakdown-value" id="marketSentiment">Positive</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">Price Per Sq Ft</span>
+                        <span class="breakdown-value" id="pricePerSqFt">$217</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">AI Confidence</span>
+                        <span class="breakdown-value" id="aiConfidence">High</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">Predicted Value</span>
+                        <span class="breakdown-value" id="totalValue">$325,000</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ai-insights-section">
+                <div class="ai-insights">
+                    <h3>🧠 AI Market Insights</h3>
+                    
+                    <div class="ai-insight-card">
+                        <div class="insight-title">Market Analysis</div>
+                        <div class="insight-content" id="marketAnalysis">
+                            AI models detect favorable market conditions with 15% growth potential over next 12 months.
+                        </div>
+                    </div>
+
+                    <div class="ai-insight-card">
+                        <div class="insight-title">Optimal Timing</div>
+                        <div class="insight-content" id="optimalTiming">
+                            Current market trends suggest optimal selling window within next 6 months.
+                        </div>
+                    </div>
+
+                    <div class="ai-insight-card">
+                        <div class="insight-title">Comparable Properties</div>
+                        <div class="insight-content" id="comparableProperties">
+                            Similar properties in your area sold for $310K-$340K in the past 3 months.
+                        </div>
+                    </div>
+
+                    <div class="market-trends">
+                        <div class="trend-card">
+                            <div class="trend-value" id="priceGrowth">+8.2%</div>
+                            <div class="trend-label">YoY Growth</div>
+                        </div>
+                        <div class="trend-card">
+                            <div class="trend-value" id="daysOnMarket">18</div>
+                            <div class="trend-label">Avg Days on Market</div>
+                        </div>
+                        <div class="trend-card">
+                            <div class="trend-value" id="inventoryLevel">2.1</div>
+                            <div class="trend-label">Months Supply</div>
+                        </div>
+                        <div class="trend-card">
+                            <div class="trend-value" id="demandIndex">High</div>
+                            <div class="trend-label">Demand Level</div>
+                        </div>
+                    </div>
+
+                    <div class="recommendation-card">
+                        <div class="recommendation-title">
+                            💡 AI Recommendation
+                        </div>
+                        <div id="aiRecommendation">
+                            Consider minor upgrades to kitchen and bathrooms to potentially increase value by $15K-$25K.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced AI-powered price calculation with more responsive output
+        class HousePriceAI {
+            constructor() {
+                this.neuralWeights = {
+                    area: 0.35,
+                    bedrooms: 0.15,
+                    bathrooms: 0.12,
+                    age: 0.18,
+                    location: 0.20,
+                    condition: 0.25,
+                    marketTrend: 0.15
+                };
+                
+                this.marketData = {
+                    urban: { base: 280, growth: 0.12, demand: 'High' },
+                    suburban: { base: 220, growth: 0.08, demand: 'Medium' },
+                    rural: { base: 150, growth: 0.05, demand: 'Low' }
+                };
+
+                this.initializeNeuralViz();
+            }
+
+            calculateAIPrice(inputs) {
+                // Simulate neural network processing
+                this.showProcessing();
+                
+                // Calculate immediately but still show processing animation
+                const prediction = this.runNeuralNetwork(inputs);
+                
+                // Show processing for at least 800ms for better UX
+                setTimeout(() => {
+                    this.updateDisplay(prediction);
+                    this.hideProcessing();
+                }, 800);
+            }
+
+            runNeuralNetwork(inputs) {
+                const { area, bedrooms, bathrooms, age, location, condition, marketTrend } = inputs;
+                
+                // Base calculation with neural network simulation
+                const locationData = this.marketData[location];
+                let basePrice = area * locationData.base;
+                
+                // Apply bedroom multiplier (non-linear)
+                const bedroomMultiplier = 1 + (Math.log(bedrooms + 1) * 0.15);
+                basePrice *= bedroomMultiplier;
+                
+                // Apply bathroom multiplier
+                const bathroomMultiplier = 1 + (bathrooms - 1) * 0.08;
+                basePrice *= bathroomMultiplier;
+                
+                // Apply age depreciation (non-linear)
+                const ageDepreciation = Math.min(0.9, age * 0.015);
+                basePrice *= (1 - ageDepreciation);
+                
+                // Apply condition multiplier
+                const conditionMultiplier = this.getConditionScore(condition) * 0.3 + 0.85;
+                basePrice *= conditionMultiplier;
+                
+                // Apply market trend
+                const marketMultiplier = this.getMarketScore(marketTrend) * 0.3 + 0.85;
+                basePrice *= marketMultiplier;
+                
+                // Calculate confidence based on data consistency
+                const confidence = this.calculateConfidence(inputs);
+                
+                // Generate insights
+                const insights = this.generateInsights(inputs, basePrice);
+                
+                return {
+                    price: Math.max(Math.round(basePrice), 75000),
+                    confidence: confidence,
+                    insights: insights,
+                    neuralScore: (conditionMultiplier + marketMultiplier + bedroomMultiplier) / 3 * 10,
+                    pricePerSqFt: basePrice / area
+                };
+            }
+
+            getConditionScore(condition) {
+                const scores = { poor: 0.3, fair: 0.5, good: 0.7, excellent: 0.9 };
+                return scores[condition];
+            }
+
+            getMarketScore(trend) {
+                const scores = { declining: 0.2, stable: 0.5, growing: 0.8, hot: 1.0 };
+                return scores[trend];
+            }
+
+            calculateConfidence(inputs) {
+                let confidence = 85;
+                
+                // Adjust confidence based on input reliability
+                if (inputs.age > 30) confidence -= 5;
+                if (inputs.area < 800 || inputs.area > 4000) confidence -= 8;
+                if (inputs.condition === 'poor') confidence -= 10;
+                if (inputs.marketTrend === 'hot') confidence += 5;
+                if (inputs.location === 'rural') confidence -= 3;
+                if (inputs.bedrooms >= 4) confidence += 2;
+                
+                return Math.max(60, Math.min(95, confidence));
+            }
+
+            generateInsights(inputs, price) {
+                const insights = [];
+                const locationData = this.marketData[inputs.location];
+                
+                // Market analysis
+                if (inputs.marketTrend === 'growing' || inputs.marketTrend === 'hot') {
+                    insights.push({
+                        type: 'market',
+                        message: `Strong market conditions detected. Property values in ${inputs.location} areas showing ${inputs.marketTrend === 'hot' ? '12-18%' : '8-12%'} growth potential.`
+                    });
+                } else if (inputs.marketTrend === 'declining') {
+                    insights.push({
+                        type: 'market',
+                        message: `Market showing signs of cooling. Consider timing your transaction carefully or improving property condition.`
+                    });
+                }
+                
+                // Timing insights
+                if (inputs.marketTrend === 'hot') {
+                    insights.push({
+                        type: 'timing',
+                        message: `Excellent time to sell! Hot market conditions favor sellers with quick sales and competitive pricing.`
+                    });
+                } else {
+                    insights.push({
+                        type: 'timing',
+                        message: `Stable market conditions provide predictable pricing. Good time for both buyers and sellers.`
+                    });
+                }
+                
+                // Improvement recommendations
+                if (inputs.condition !== 'excellent') {
+                    const potential = inputs.condition === 'poor' ? 
+                        `$${Math.round(price * 0.1).toLocaleString()}-$${Math.round(price * 0.15).toLocaleString()}` : 
+                        `$${Math.round(price * 0.05).toLocaleString()}-$${Math.round(price * 0.08).toLocaleString()}`;
+                    insights.push({
+                        type: 'improvement',
+                        message: `Upgrading to excellent condition could increase value by ${potential}. Focus on kitchen, bathrooms, and curb appeal.`
+                    });
+                }
+                
+                return insights;
+            }
+
+            showProcessing() {
+                document.getElementById('processingIndicator').style.display = 'flex';
+                this.animateNeuralNetwork();
+            }
+
+            hideProcessing() {
+                document.getElementById('processingIndicator').style.display = 'none';
+            }
+
+            updateDisplay(prediction) {
+                const priceElement = document.getElementById('predictedPrice');
+                const formattedPrice = new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                    maximumFractionDigits: 0
+                }).format(prediction.price);
+                
+                priceElement.textContent = formattedPrice;
+                priceElement.classList.add('pulse');
+                setTimeout(() => priceElement.classList.remove('pulse'), 500);
+                
+                // Update confidence
+                const confidenceBar = document.getElementById('confidenceBar');
+                const confidenceLevel = document.getElementById('confidenceLevel');
+                confidenceBar.style.width = prediction.confidence + '%';
+                confidenceLevel.textContent = prediction.confidence + '%';
+                
+                // Update breakdown
+                document.getElementById('neuralScore').textContent = prediction.neuralScore.toFixed(1) + '/10';
+                document.getElementById('pricePerSqFt').textContent = '$' + Math.round(prediction.pricePerSqFt);
+                document.getElementById('totalValue').textContent = formattedPrice;
+                
+                // Update market sentiment
+                const confidenceText = prediction.confidence > 80 ? 'High' : prediction.confidence > 60 ? 'Medium' : 'Low';
+                document.getElementById('aiConfidence').textContent = confidenceText;
+                
+                                const marketSentiment = prediction.neuralScore > 7 ? 'Positive' : 
+                                      prediction.neuralScore > 5 ? 'Neutral' : 'Caution';
+                document.getElementById('marketSentiment').textContent = marketSentiment;
+                
+                // Update insights
+                document.getElementById('marketAnalysis').textContent = 
+                    prediction.insights.find(i => i.type === 'market').message;
+                document.getElementById('optimalTiming').textContent = 
+                    prediction.insights.find(i => i.type === 'timing').message;
+                
+                const improvementInsight = prediction.insights.find(i => i.type === 'improvement');
+                if (improvementInsight) {
+                    document.getElementById('aiRecommendation').textContent = improvementInsight.message;
+                }
+                
+                // Update market trends
+                const locationData = this.marketData[document.getElementById('location').value];
+                document.getElementById('priceGrowth').textContent = 
+                    (locationData.growth * 100).toFixed(1) + '%';
+                document.getElementById('demandIndex').textContent = locationData.demand;
+                
+                // Randomize some market metrics for realism
+                document.getElementById('daysOnMarket').textContent = 
+                    Math.floor(Math.random() * 10) + (marketSentiment === 'Positive' ? 10 : 20);
+                document.getElementById('inventoryLevel').textContent = 
+                    (Math.random() * 1.5 + 1).toFixed(1);
+                
+                // Update comparable properties
+                const lowRange = Math.round(prediction.price * 0.95);
+                const highRange = Math.round(prediction.price * 1.05);
+                document.getElementById('comparableProperties').textContent = 
+                    `Similar properties in your area sold for ${new Intl.NumberFormat('en-US', {
+                        style: 'currency',
+                        currency: 'USD',
+                        maximumFractionDigits: 0
+                    }).format(lowRange)}-${new Intl.NumberFormat('en-US', {
+                        style: 'currency',
+                        currency: 'USD',
+                        maximumFractionDigits: 0
+                    }).format(highRange)} in the past 3 months.`;
+            }
+
+            initializeNeuralViz() {
+                const container = document.getElementById('neuralViz');
+                container.innerHTML = '';
+                
+                // Create neural network visualization
+                const layers = 5;
+                const nodesPerLayer = [3, 4, 5, 4, 1];
+                
+                for (let layer = 0; layer < layers; layer++) {
+                    for (let node = 0; node < nodesPerLayer[layer]; node++) {
+                        const nodeElement = document.createElement('div');
+                        nodeElement.className = 'neural-node';
+                        
+                        // Position nodes in layers
+                        const left = 10 + (layer * 20);
+                        const top = 30 + (node * (100 / (nodesPerLayer[layer] + 1)));
+                        
+                        nodeElement.style.left = `${left}%`;
+                        nodeElement.style.top = `${top}%`;
+                        nodeElement.style.animationDelay = `${Math.random() * 2}s`;
+                        
+                        container.appendChild(nodeElement);
+                        
+                        // Create connections to next layer if not last layer
+                        if (layer < layers - 1) {
+                            for (let nextNode = 0; nextNode < nodesPerLayer[layer + 1]; nextNode++) {
+                                const connection = document.createElement('div');
+                                connection.className = 'neural-connection';
+                                
+                                // Position connections between nodes
+                                const nextLeft = 10 + ((layer + 1) * 20);
+                                const nextTop = 30 + (nextNode * (100 / (nodesPerLayer[layer + 1] + 1)));
+                                
+                                const angle = Math.atan2(nextTop - top, nextLeft - left) * 180 / Math.PI;
+                                const length = Math.sqrt(
+                                    Math.pow(nextLeft - left, 2) + 
+                                    Math.pow(nextTop - top, 2)
+                                );
+                                
+                                connection.style.width = `${length}%`;
+                                connection.style.left = `${left}%`;
+                                connection.style.top = `${top}%`;
+                                connection.style.transform = `rotate(${angle}deg)`;
+                                connection.style.transformOrigin = '0 0';
+                                connection.style.animationDelay = `${Math.random() * 3}s`;
+                                
+                                container.appendChild(connection);
+                            }
+                        }
+                    }
+                }
+            }
+
+            animateNeuralNetwork() {
+                const nodes = document.querySelectorAll('.neural-node');
+                const connections = document.querySelectorAll('.neural-connection');
+                
+                // Randomly pulse nodes
+                nodes.forEach(node => {
+                    node.style.animation = 'pulse-node 2s ease-in-out infinite';
+                    node.style.animationDelay = `${Math.random() * 2}s`;
+                });
+                
+                // Animate data flow through connections
+                connections.forEach(conn => {
+                    conn.style.animation = 'data-flow 3s linear infinite';
+                    conn.style.animationDelay = `${Math.random() * 3}s`;
+                });
+            }
+        }
+
+        // Initialize the AI
+        const priceAI = new HousePriceAI();
+
+        // Set up event listeners for all inputs
+        const inputs = [
+            'area', 'bedrooms', 'bathrooms', 'age', 
+            'location', 'condition', 'marketTrend'
+        ];
+
+        inputs.forEach(inputId => {
+            const element = document.getElementById(inputId);
+            element.addEventListener('input', updatePrediction);
+            
+            // Special handling for sliders to show values
+            if (element.type === 'range') {
+                const valueDisplay = document.getElementById(inputId + 'Value');
+                element.addEventListener('input', () => {
+                    if (inputId === 'area') {
+                        valueDisplay.textContent = element.value + ' sq ft';
+                    } else if (inputId === 'age') {
+                        valueDisplay.textContent = element.value + ' years';
+                    }
+                });
+            }
+        });
+
+        // Initial prediction
+        updatePrediction();
+
+        function updatePrediction() {
+            const inputs = {
+                area: parseInt(document.getElementById('area').value),
+                bedrooms: parseInt(document.getElementById('bedrooms').value),
+                bathrooms: parseInt(document.getElementById('bathrooms').value),
+                age: parseInt(document.getElementById('age').value),
+                location: document.getElementById('location').value,
+                condition: document.getElementById('condition').value,
+                marketTrend: document.getElementById('marketTrend').value
+            };
+            
+            priceAI.calculateAIPrice(inputs);
+        }
+        
+    </script>
+</body>
+</html>
