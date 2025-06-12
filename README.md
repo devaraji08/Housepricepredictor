@@ -38,17 +38,9 @@ Model development follows a systematic approach starting with data collection fr
 
 The HTML frontend emphasizes user experience with responsive design that adapts to various screen sizes. Input validation prevents errors before processing, while interactive elements like dropdowns and sliders enhance usability. Results display clearly with proper error handling and loading states for better user feedback.
 
-## API Integration
-
-Beyond the web interface, the application provides REST API endpoints for programmatic access. Developers can send POST requests with property data in JSON format and receive predictions programmatically, enabling integration with other applications or automated systems.
-
 ## Data Processing Pipeline
 
 The system handles data preprocessing automatically, including missing value imputation, outlier detection, and feature scaling. Categorical variables are properly encoded, and new features are derived from existing data to improve prediction accuracy.
-
-## Deployment Options
-
-The application supports various deployment platforms including Heroku for cloud hosting, AWS for scalable infrastructure, or GitHub Pages for static components. Configuration files and documentation guide users through different deployment scenarios.
 
 ## Future Enhancements
 
